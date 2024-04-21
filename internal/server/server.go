@@ -72,8 +72,8 @@ func (s *Server) handle(conn net.Conn) {
 		return
 	}
 
-    handler, ok := s.Handlers[request.Path]
-    if !ok {
+    handler := s.matchHandler(request.Method, request.Path)//s.Handlers[request.Path]
+    if handler == nil {
         res := response.New(404, map[string]string{}, "")
 		conn.Write([]byte(res.String()))
 
@@ -82,4 +82,8 @@ func (s *Server) handle(conn net.Conn) {
     
     res := handler(request)
 	conn.Write([]byte(res.String()))
+}
+
+func (s *Server) matchHandler(method string, path string) func(*request.Request) *response.Response {
+    return nil
 }
