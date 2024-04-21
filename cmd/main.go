@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dinizgab/golang-webserver/internal/request"
+	"github.com/dinizgab/golang-webserver/internal/response"
 	server "github.com/dinizgab/golang-webserver/internal/server"
 )
 
@@ -14,7 +16,15 @@ var dirPath string
 func main() {
     server := server.New("127.0.0.1", 4221)
 
+    server.AddHandler("/index", getIndex)
+
     server.Serve()
+}
+
+func getIndex(req *request.Request) *response.Response {
+    response := response.New(200, map[string]string{}, "Hello, from index!")
+    
+    return response
 }
 
 func handleRequest(conn net.Conn) {

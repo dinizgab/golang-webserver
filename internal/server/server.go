@@ -12,12 +12,20 @@ import (
 type Server struct {
 	Host string
 	Port int
+    Handlers map[string]func(*request.Request) *response.Response
+}
+
+type serverImpl interface {
+    Serve()
+    AddHandler(path string, handlerFunc func(*request.Request))
+    handle(conn net.Conn)
 }
 
 func New(host string, port int) *Server {
 	return &Server{
 		Host: host,
 		Port: port,
+        Handlers: map[string]func(*request.Request) *response.Response{},
 	}
 }
 
@@ -40,6 +48,10 @@ func (s *Server) Serve() {
 	}
 }
 
+func (s *Server) AddHandler(path string, handlerFunc func(*request.Request) *response.Response) {
+    s.Handlers[path] = handlerFunc
+}
+
 func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
 
@@ -60,9 +72,14 @@ func (s *Server) handle(conn net.Conn) {
 		return
 	}
 
-	fmt.Println(request)
-	// TODO - Create handle functions based on req method and path
-	res := response.New(200, map[string]string{"test": "test"}, "Hello World")
+    handler, ok := s.Handlers[request.Path]
+    if !ok {
+        res := response.New(404, map[string]string{}, "")
+		conn.Write([]byte(res.String()))
 
+        return
+    }
+    
+    res := handler(request)
 	conn.Write([]byte(res.String()))
 }
