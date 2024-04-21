@@ -5,27 +5,28 @@ import (
 	"log"
 	"net"
 
+	"github.com/dinizgab/golang-webserver/internal/handler"
 	"github.com/dinizgab/golang-webserver/internal/request"
 	"github.com/dinizgab/golang-webserver/internal/response"
 )
 
 type Server struct {
-	Host string
-	Port int
-    Handlers map[string]func(*request.Request) *response.Response
+	Host     string
+	Port     int
+	Handlers map[string]*handler.Handler
 }
 
 type serverImpl interface {
-    Serve()
-    AddHandler(path string, handlerFunc func(*request.Request))
-    handle(conn net.Conn)
+	Serve()
+	AddHandler(path string, handlerFunc func(*request.Request) *response.Response)
+	handle(conn net.Conn)
 }
 
 func New(host string, port int) *Server {
 	return &Server{
-		Host: host,
-		Port: port,
-        Handlers: map[string]func(*request.Request) *response.Response{},
+		Host:     host,
+		Port:     port,
+		Handlers: map[string]*handler.Handler{},
 	}
 }
 
@@ -48,8 +49,10 @@ func (s *Server) Serve() {
 	}
 }
 
-func (s *Server) AddHandler(path string, handlerFunc func(*request.Request) *response.Response) {
-    s.Handlers[path] = handlerFunc
+func (s *Server) AddHandler(method string, path string, handlerFunc func(*request.Request) *response.Response) {
+	newHandler := handler.New(path, method, handlerFunc)
+
+	s.Handlers[path] = newHandler
 }
 
 func (s *Server) handle(conn net.Conn) {
@@ -72,18 +75,18 @@ func (s *Server) handle(conn net.Conn) {
 		return
 	}
 
-    handler := s.matchHandler(request.Method, request.Path)//s.Handlers[request.Path]
-    if handler == nil {
-        res := response.New(404, map[string]string{}, "")
+	handler := s.matchHandler(request.Method, request.Path) //s.Handlers[request.Path]
+	if handler == nil {
+		res := response.New(404, map[string]string{}, "")
 		conn.Write([]byte(res.String()))
 
-        return
-    }
-    
-    res := handler(request)
+		return
+	}
+
+    res := handler.HandlerFunc.Handle(request)
 	conn.Write([]byte(res.String()))
 }
 
-func (s *Server) matchHandler(method string, path string) func(*request.Request) *response.Response {
-    return nil
+func (s *Server) matchHandler(_ string, path string) *handler.Handler {
+	return s.Handlers[path]
 }
