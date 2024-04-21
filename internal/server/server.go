@@ -46,21 +46,23 @@ func (s *Server) handle(conn net.Conn) {
 	buffer := make([]byte, 4096)
 	n, err := conn.Read(buffer)
 	if err != nil {
-		// TODO - Return bad request
-		log.Fatal(err)
+		res := response.New(500, map[string]string{}, "Internal Server Error")
+		conn.Write([]byte(res.String()))
+
 		return
 	}
 	req := string(buffer[:n])
 	request, err := request.New(req)
 	if err != nil {
-		// TODO - Return internal server error
-		log.Fatal(err)
+		res := response.New(500, map[string]string{}, "Internal Server Error")
+		conn.Write([]byte(res.String()))
+
 		return
 	}
 
 	fmt.Println(request)
 	// TODO - Create handle functions based on req method and path
-    res := response.New(200, map[string]string{"test": "test"}, "Hello World")
+	res := response.New(200, map[string]string{"test": "test"}, "Hello World")
 
 	conn.Write([]byte(res.String()))
 }
