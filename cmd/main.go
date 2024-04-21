@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	server "github.com/dinizgab/golang-webserver/internal/server"
 )
 
 var dirPath string
@@ -14,21 +16,8 @@ func main() {
 	flag.StringVar(&dirPath, "directory", "", "Directory to serve files from")
 	flag.Parse()
 
-	l, err := net.Listen("tcp", "0.0.0.0:4221")
-	if err != nil {
-		fmt.Println("Failed to bind to port 4221")
-		os.Exit(1)
-	}
-
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
-		}
-
-		go handleRequest(conn)
-	}
+    server := server.New("0.0.0.0", 4221)
+    server.Serve()
 }
 
 func handleRequest(conn net.Conn) {
