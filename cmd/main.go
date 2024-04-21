@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -13,10 +12,8 @@ import (
 var dirPath string
 
 func main() {
-	flag.StringVar(&dirPath, "directory", "", "Directory to serve files from")
-	flag.Parse()
+    server := server.New("127.0.0.1", 4221)
 
-    server := server.New("0.0.0.0", 4221)
     server.Serve()
 }
 

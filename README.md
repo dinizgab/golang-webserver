@@ -3,10 +3,11 @@
 - This is a webserver built from scratch with Golang and it's standard library.
 
 ## Todo
-[] Refactor the main file
-[] Create a model that holds the server informations
-[] Make a request struct
+[x] Refactor the main file
+[x] Create a model that holds the server informations
+[x] Make a request struct
 [] Make a response struct
-[] Create a better way to declare routes (interface)
+[] Create a better way to declare routes
+[] Implement a way to store the routes (map[routeName]routeHandler)
 [] Create a better way to parse the headers
 [] Create a better way to parse URI params and query variables
